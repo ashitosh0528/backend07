@@ -21,7 +21,7 @@ const userSchema = new Schema({
          },
     coverimage:{
         type:String, // cloudinary URL
-              },
+             },
     watchhistory:[ 
         { 
         type:Schema.Types.ObjectId,
@@ -43,6 +43,34 @@ const userSchema = new Schema({
      }) 
      userSchema.methods.ispasswordcorrect = async function(password){
     return await bcrypt.compare(password, this.password)
+    }
+
+    userSchema.methods.generateAccessToken =()=>{
+        jwt.sign({ 
+            _id:this._id,
+            email:this.email,
+            fullname:this.fullname,
+            username:this.username
+         },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        }
+        );
+
+    }
+    userSchema.methods.generateRefreshToken =()=>{
+        jwt.sign({ 
+            _id:this._id,
+            email:this.email,
+            fullname:this.fullname,
+            username:this.username
+         },
+        process.env.RFRESH_TOKEN_SECRET,
+        {
+          expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+        }
+        );
     }
 
 export const User = mongoose.model('User',userSchema) 
