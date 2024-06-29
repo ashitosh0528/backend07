@@ -28,4 +28,4 @@ return res
    }
 
 
-   export {uploadOnCloudinary}
+   export {uploadOnCloudinary }
