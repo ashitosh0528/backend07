@@ -4,12 +4,17 @@ import {User} from  '../models/user.models.js'
 import {uploadOnCloudinary} from '../utils/cloudinary.js'
 import {ApiResponse,} from '../utils/apiResponse.js'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 const generateAccessAndRefreshTokens = async(userId)=>{
 
 try {
-     const user= await User.findById(userId)  
+     console.log(userId)
+     const user= await User.findById(userId)
+     console.log(user)  
  const accessToken = user.generateAccessToken()
+//  console.log(accessToken)   
  const refreshToken = user.generateRefreshToken()
+//  console.log(refreshToken ,"no refresh token")    
  user.refreshToken =refreshToken
   await user.save({validateBeforeSave:false})
 
@@ -106,11 +111,13 @@ if(!user){
      throw new ApiError(404, "user not found")
 }
  //now check for given password is valid or not
+ console.log('Input password:', password);
+ console.log('Stored hashed password:', user.password);
+ const isPasswordValid = await user.ispasswordcorrect(password)
+ console.log('Password validation result:', isPasswordValid);
 
- const isPasswordValidate = await user.ispasswordcorrect(password)
-
- if(!isPasswordValidate){
-     throw new ApiError(404,'please enter correct password ')
+ if(!isPasswordValid){
+     throw new ApiError(404,'please enter correct password')
  }
 //  create refreshtoken ad accesstoken 
 
@@ -141,9 +148,6 @@ status(200)
           "user logged in successfully"
 )
 )
-
-
-
 
 })
 
@@ -176,7 +180,7 @@ return res
 })
 
 const refreshToken = asyncHandler(async(req,res)=>{
-    const incomingRefreshToken = req.cookieParser.refreshToken || req.body.refreshToken
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if(!incomingRefreshToken){
      throw new ApiError(401,"unauthorised rerquest")

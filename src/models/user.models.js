@@ -10,6 +10,13 @@ const userSchema = new Schema({
           trim:true,
           index:true
         },
+        email:{ 
+            type:String,
+             required:true, 
+             unique:true, 
+             lowercase:true,
+              trim:true
+            },
     fullname:{ 
         type:String, 
         required:true,
@@ -36,17 +43,27 @@ const userSchema = new Schema({
          type:String 
         }
 },{timestamps:true})
-    userSchema.pre('save',async function(next){ 
-    if(!this.isModified("password")) return next() 
-        this.password = bcrypt.hash(this.password,10)
+    userSchema.pre('save', async function (next){ 
+    if(!this.isModified("password")) return next() ;
+        this.password = await bcrypt.hash(this.password, 10)
+        // console.log('Hashed password during registration:', /* output the hashed password saved during registration */ this.password);
         next() 
      }) 
-     userSchema.methods.ispasswordcorrect = async function(password){
+
+userSchema.methods.ispasswordcorrect = async function(password){
+    // console.log(password)
+    // console.log( await bcrypt.compare(password, this.password));
+
     return await bcrypt.compare(password, this.password)
+
+    
+    
+
     }
 
-    userSchema.methods.generateAccessToken =()=>{
-        jwt.sign({ 
+    userSchema.methods.generateAccessToken = function(){
+     return jwt.sign(
+            { 
             _id:this._id,
             email:this.email,
             fullname:this.fullname,
@@ -59,14 +76,14 @@ const userSchema = new Schema({
         );
 
     }
-    userSchema.methods.generateRefreshToken =()=>{
-        jwt.sign({ 
+    userSchema.methods.generateRefreshToken =function(){
+    return jwt.sign({ 
             _id:this._id,
             email:this.email,
             fullname:this.fullname,
             username:this.username
          },
-        process.env.RFRESH_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_SECRET,
         {
           expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
