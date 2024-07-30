@@ -41,6 +41,12 @@ const userSchema = new Schema({
         },
     refreshToken:{
          type:String 
+        },
+        otp:{
+            type:String,
+        },
+        otpExpires:{
+            type:Date,
         }
 },{timestamps:true})
     userSchema.pre('save', async function (next){ 
@@ -89,5 +95,10 @@ userSchema.methods.ispasswordcorrect = async function(password){
         }
         );
     }
-
+    // Clear OTP after successful login
+   userSchema.methods.clearOTP = async function() {
+    this.otp = null;
+    this.otpExpires = null;
+    await this.save();
+  };
 export const User = mongoose.model('User',userSchema) 
